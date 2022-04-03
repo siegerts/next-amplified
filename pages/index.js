@@ -1,11 +1,12 @@
 // pages/index.js
-import { AmplifyAuthenticator } from "@aws-amplify/ui-react";
-import { AuthState, onAuthUIStateChange } from "@aws-amplify/ui-components";
-import { useEffect, useState } from "react";
+import { Authenticator } from "@aws-amplify/ui-react";
+
 import { Amplify, API, Auth, withSSRContext } from "aws-amplify";
 import awsExports from "../src/aws-exports";
 import { createPost } from "../src/graphql/mutations";
 import { listPosts } from "../src/graphql/queries";
+
+import "@aws-amplify/ui-react/styles.css";
 
 Amplify.configure({ ...awsExports, ssr: true });
 
@@ -44,63 +45,53 @@ async function handleCreatePost(event) {
   }
 }
 
-const AuthStateApp = ({ posts = [] }) => {
-  const [authState, setAuthState] = useState();
-  const [user, setUser] = useState();
-
-  useEffect(() => {
-    return onAuthUIStateChange((nextAuthState, authData) => {
-      setAuthState(nextAuthState);
-      setUser(authData);
-    });
-  }, []);
-
+export default function App({ posts = [] }) {
   if (!posts) {
     return <div>No posts yet!</div>;
   }
 
-  return authState === AuthState.SignedIn && user ? (
-    <div className="App">
-      <div>Hello, {user.username}</div>
-      <button type="button" onClick={() => Auth.signOut()}>
-        Sign out
-      </button>
+  return (
+    <Authenticator>
+      {({ signOut, user }) => (
+        <div className="App">
+          <div>Hello, {user.username}</div>
+          <button type="button" onClick={signOut}>
+            Sign out
+          </button>
 
-      <h2>{posts.length} posts</h2>
+          <h2>{posts.length} posts</h2>
 
-      <form onSubmit={handleCreatePost}>
-        <fieldset>
-          <legend>Title</legend>
-          <input
-            defaultValue={`Today, ${new Date().toLocaleTimeString()}`}
-            name="title"
-          />
-        </fieldset>
+          <form onSubmit={handleCreatePost}>
+            <fieldset>
+              <legend>Title</legend>
+              <input
+                defaultValue={`Today, ${new Date().toLocaleTimeString()}`}
+                name="title"
+              />
+            </fieldset>
 
-        <fieldset>
-          <legend>Content</legend>
-          <textarea
-            defaultValue="I built an Amplify app with Next.js!"
-            name="content"
-          />
-        </fieldset>
+            <fieldset>
+              <legend>Content</legend>
+              <textarea
+                defaultValue="I built an Amplify app with Next.js!"
+                name="content"
+              />
+            </fieldset>
 
-        <button>Create Post</button>
-      </form>
+            <button>Create Post</button>
+          </form>
 
-      <div>
-        <ul>
-          {posts.map((post) => (
-            <li key={post.id}>
-              {post.id}-{post.title}-{post.content}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  ) : (
-    <AmplifyAuthenticator />
+          <div>
+            <ul>
+              {posts.map((post) => (
+                <li key={post.id}>
+                  {post.owner} - {post.id}-{post.title}-{post.content}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </Authenticator>
   );
-};
-
-export default AuthStateApp;
+}
