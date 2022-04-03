@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "12.1.4",
+    "@aws-amplify/ui-react": "v1",
+    "aws-amplify": "^4.3.18",
+    "next": "11.0.1",
     "react": "18.0.0",
     "react-dom": "18.0.0"
   },
